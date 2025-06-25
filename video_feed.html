@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PAT</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      max-width: 1200px;
+      margin: auto;
+      padding: 16px;
+    }
+
+    .player {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      margin-bottom: 20px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .video-feed {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .video-item {
+      cursor: pointer;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      overflow: hidden;
+    }
+
+    .video-item:hover {
+      transform: scale(1.03);
+    }
+
+    .video-thumb img {
+      width: 100%;
+      display: block;
+    }
+
+    .video-title {
+      padding: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    @media (max-width: 600px) {
+      .video-title {
+        font-size: 13px;
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="player">
+      <iframe id="mainPlayer" src="https://watch.videodelivery.net/44ee7db89f1fc5c8385bd589c8c9cfd0" allowfullscreen></iframe>
+    </div>
+
+    <div class="video-feed" id="videoFeed">
+      <!-- Video items will go here -->
+    </div>
+  </div>
+
+  <script>
+    const videos = [
+        {
+        title: "(.)(.)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/504eb1922f463b42a02048d0a8cf5070/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/504eb1922f463b42a02048d0a8cf5070/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "R-attempt",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4f72ac9f1d6f06c805ee1a148091005b/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4f72ac9f1d6f06c805ee1a148091005b/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "All things ammazing",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/16072c77c84c8a81c9074bbbdb0efaa1/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/16072c77c84c8a81c9074bbbdb0efaa1/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Futanari Test(doll)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/df9cbca5da2d58dea750864b3ea7666c/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/df9cbca5da2d58dea750864b3ea7666c/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Instresting Things",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/89533ddc19dec65c74354c140c77d7f8/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/89533ddc19dec65c74354c140c77d7f8/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Siping Tea",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/e7985c9750eb9574d402fde40dce1908/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/e7985c9750eb9574d402fde40dce1908/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Testing influancers prodects",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4720caaa58ab4480686aa8c74bab134d/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4720caaa58ab4480686aa8c74bab134d/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "updates",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/bad9ce339dd139b4eca6157d628ff2b2/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/bad9ce339dd139b4eca6157d628ff2b2/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Cayous(LITNSFW)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/3fdb85c209f573cc6af13b1c45c27216/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/3fdb85c209f573cc6af13b1c45c27216/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Disney Land VLOG",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/093a5aa6ea397d97f1a0bea5335d27c4/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/093a5aa6ea397d97f1a0bea5335d27c4/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Jinkes",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/91b7575ab11fad8bcf2c8fbdedf12bee/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/91b7575ab11fad8bcf2c8fbdedf12bee/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "people frecking diying/cursed comments(LITNSFW)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9d88ecfeae8e4121a9cedeb7b8ad911a/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9d88ecfeae8e4121a9cedeb7b8ad911a/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Positions 2 (doll) ",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5e5a461ca887e05e96083faa615d0437/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5e5a461ca887e05e96083faa615d0437/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2a5bda136828ce18eef51c50120bc7f3/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2a5bda136828ce18eef51c50120bc7f3/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "memes/memesIRL(LITNSFW)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2a5bda136828ce18eef51c50120bc7f3/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2a5bda136828ce18eef51c50120bc7f3/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "people atempted",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/0afcecc38b2524889fde882bb8616505/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/0afcecc38b2524889fde882bb8616505/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Thankes i hate it(litNSFW)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/497dfe85fd15126700d0ab2fa7982970/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/497dfe85fd15126700d0ab2fa7982970/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "HOLEUP/Shitpost",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/341c515d22301aaf086ab91de914c269/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/341c515d22301aaf086ab91de914c269/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "SipsTEA",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2b6ef98790881951d7d8d2801edd05c8/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2b6ef98790881951d7d8d2801edd05c8/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Video MEmes",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f033c70319f346f434e1ad9d96562a9a/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f033c70319f346f434e1ad9d96562a9a/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Jennie CosPlay 3",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/eeb17ca097e508da3546c92380f01103/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/eeb17ca097e508da3546c92380f01103/watchthumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "CRIENG",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/1b1813abb1ba95cd4db4474ef151c736/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/1b1813abb1ba95cd4db4474ef151c736/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Twiter",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9c43c5580d729398d8acc51c60235b76/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9c43c5580d729398d8acc51c60235b76/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Unepeceted",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/df5e97d079a1d58bcc9cce6dc986c1a5/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/df5e97d079a1d58bcc9cce6dc986c1a5/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "MadeMe Smile",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/6333c7d849aa44b8b22e88621d32b301/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/6333c7d849aa44b8b22e88621d32b301/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Attempt",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/c49ce2d60190d66d8a8ce7eaf6bce038/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/c49ce2d60190d66d8a8ce7eaf6bce038/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Cursed Comments/ Awww",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a374eb8ae11a045f5ab27abd612b9d66/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a374eb8ae11a045f5ab27abd612b9d66/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "JolliBee",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/97855b5e9729558146758306ede6f125/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/97855b5e9729558146758306ede6f125/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Holeup/shitpost",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/241f8553b4b1d1d931083afec8eb363f/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/241f8553b4b1d1d931083afec8eb363f/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "SipsTea",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/aa589f0c28b4877cd58acd3b9d0a9ccd/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/aa589f0c28b4877cd58acd3b9d0a9ccd/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "VideoGame(SUBVERSE)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/17fd6b7db0c908229376a3dff9662ef7/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/17fd6b7db0c908229376a3dff9662ef7/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Video MEme",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/3ad753cc1e53101269654070769868b7/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/3ad753cc1e53101269654070769868b7/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "twiter posts",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5158cee4a65ea44ef1f6e7ef5d884945/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5158cee4a65ea44ef1f6e7ef5d884945/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Cring",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f59bc91b6b26756401e120b523a9c390/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f59bc91b6b26756401e120b523a9c390/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Games (Fiveherats-1)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/6626aa26b992b089c29b9f5032168ba1/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/6626aa26b992b089c29b9f5032168ba1/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Fiveherats-2",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/ebc170b6ce660cd115ac4ccba0fddd1d/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/ebc170b6ce660cd115ac4ccba0fddd1d/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Fiveherats-3",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/84947ffb85a0bcefd012a4f6402e2b86/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/84947ffb85a0bcefd012a4f6402e2b86/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Fiveherats-4",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f9a6fa2f96990eb7992407b8d71a27a9/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f9a6fa2f96990eb7992407b8d71a27a9/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Fiveherats-5",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/7b8969a926850c6a58c8e6c8c10d1c2c/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/7b8969a926850c6a58c8e6c8c10d1c2c/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "unexpected",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/83b4c81dc7045c41f76aaa72d82b32db/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/83b4c81dc7045c41f76aaa72d82b32db/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "MakeMeSmile",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5a14ad3fcc4e1326a73c30e4cd9dc499/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5a14ad3fcc4e1326a73c30e4cd9dc499/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "AWWWW/Cursed comments",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a49ff15604118ca13e25912726a9b144/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a49ff15604118ca13e25912726a9b144/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Attemps",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/177638918ef4930d3310e00212bf4289/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/177638918ef4930d3310e00212bf4289/thumbnails/thumbnail.jpg?height=720"
+      },{
+        title: "HOleUp",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/37510b17a93368a9116b01e020638733/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/37510b17a93368a9116b01e020638733/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "KaiBack (OpLovecraft game)",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2935b80a7f8c1d65d470769a993269dd/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2935b80a7f8c1d65d470769a993269dd/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "SipsTea",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/18d6285cd408b3af354cfcb950320eab/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/18d6285cd408b3af354cfcb950320eab/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "MEMEs",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/77acf56e3acb3eb77f44a9688b39fb25/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/77acf56e3acb3eb77f44a9688b39fb25/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "twiter",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f44b6dcac3903037df49ff5bad8119db/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f44b6dcac3903037df49ff5bad8119db/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Cringe",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/99ec96a80351ec97aeb90cac0469ec69/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/99ec96a80351ec97aeb90cac0469ec69/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "unexpected",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/537e0e1b7f2b9b4ad2e18715c588d562/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/537e0e1b7f2b9b4ad2e18715c588d562/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Made me smile",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a15430370247c4606480defe8c3c1fc6/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a15430370247c4606480defe8c3c1fc6/thumbnails/thumbnail.jpg?height=720"
+      },
+
+      {
+        title: "Attempt",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9a48fe431f8ee6aacfd178aa1238e172/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9a48fe431f8ee6aacfd178aa1238e172/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "dazirum (A)Game",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/ecf1431eaa28bd98dded498df2bd947c/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/ecf1431eaa28bd98dded498df2bd947c/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Cute Things and cursed things",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/d36268ac619687dfbe7feea31a1e55f9/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/d36268ac619687dfbe7feea31a1e55f9/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Video MEMEs",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/155f9736bac01ddb93bb4d68b6ae40da/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/155f9736bac01ddb93bb4d68b6ae40da/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Holeup",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/c92582373560206e1f09aa649d37a5f7/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/c92582373560206e1f09aa649d37a5f7/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Updates",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f9b12d68939176df6529e0a0b3f5cceb/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f9b12d68939176df6529e0a0b3f5cceb/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "SipsTea",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/d090e5a36f3b97c1d72020854edebd08/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/d090e5a36f3b97c1d72020854edebd08/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Desiram -2 (A)game",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/32d7e44f4a0fc848dc1e0a8df810f819/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/32d7e44f4a0fc848dc1e0a8df810f819/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Crieng",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4d16f5273ff438ee3bf712eae99e044e/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4d16f5273ff438ee3bf712eae99e044e/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "drinking game",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/7c41803085429a76d45779d63002ad32/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/7c41803085429a76d45779d63002ad32/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Unexpected",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a617529b67938e42a7de7f474c50ee1d/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a617529b67938e42a7de7f474c50ee1d/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Wholesome",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/35e870c39278de811daf38a65cfb7983/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/35e870c39278de811daf38a65cfb7983/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "R-attempt",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4f72ac9f1d6f06c805ee1a148091005b/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4f72ac9f1d6f06c805ee1a148091005b/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "desirem -3 (A) game",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a4842a442c01baa1113b04f1853c9f49/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a4842a442c01baa1113b04f1853c9f49/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "Holeup",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/d3b42c1e2efc3069b5f5f578e5f4bc24/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/d3b42c1e2efc3069b5f5f578e5f4bc24/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-ALI again",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2bc06c263f09763ba8f962e0b8de4e18/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/2bc06c263f09763ba8f962e0b8de4e18/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-HOrneyest content",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/7bf2bf40d2150912c6ceaa7305da9319/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/7bf2bf40d2150912c6ceaa7305da9319/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/3cdd3b774971f9a05dd126401b99a190/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/3cdd3b774971f9a05dd126401b99a190/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-ALICAKES challengs",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/d49a5eae60795d015a286ba07c2d7cb0/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/d49a5eae60795d015a286ba07c2d7cb0/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/488cbf61da9accd9b1805b5f69dd8c26/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/488cbf61da9accd9b1805b5f69dd8c26/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-Buying DOLL-2",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/6d49969103591046832b232a218044c0/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/6d49969103591046832b232a218044c0/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f7bc5eeb323090672cb7645ae8ac4449/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f7bc5eeb323090672cb7645ae8ac4449/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-INSTAGRAM-TIKTOK",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/1ccdb9b59440b9c25c797d93f1011762/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/1ccdb9b59440b9c25c797d93f1011762/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-STATION-BONERVILL",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/303ac304a4449b5c32f7e4556be4ba14/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/303ac304a4449b5c32f7e4556be4ba14/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-BIKINI Beristas",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a3357622f7eed40539c6050f88f3b9be/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a3357622f7eed40539c6050f88f3b9be/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-ASMR",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a3dfa256f6e523dc411809e1d6f2ea5a/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/a3dfa256f6e523dc411809e1d6f2ea5a/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/0f33f496ad79036294579dcd27bd8a79/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/0f33f496ad79036294579dcd27bd8a79/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-Birthcontrole",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4066aa98b5996f63cfe1963dbab667a1/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4066aa98b5996f63cfe1963dbab667a1/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/394676d165fb9b357a1b6df9ec0d849e/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/394676d165fb9b357a1b6df9ec0d849e/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-photoCoping",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/11c0957772695854d61c69751355f523/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/11c0957772695854d61c69751355f523/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-HAnime",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/45d2f9d397a0e2735db51f614acb9233/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/45d2f9d397a0e2735db51f614acb9233/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9c6385c527c2a4658d1c65eb53abc888/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9c6385c527c2a4658d1c65eb53abc888/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-Cousplay girl",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4b6fb4f26dded0a222aae328de97e895/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/4b6fb4f26dded0a222aae328de97e895/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-treasere of nadia",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f51c712c4def6bbc337295ea9f93113e/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/f51c712c4def6bbc337295ea9f93113e/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-serbiea",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/212e9c275eece09fb65828b628f4d5bd/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/212e9c275eece09fb65828b628f4d5bd/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-SUSU",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/8ebecbcb5888779a65ef71e26c863d7f/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/8ebecbcb5888779a65ef71e26c863d7f/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-Hmemes",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/737a81977c5cfec0934442101ac3fa26/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/737a81977c5cfec0934442101ac3fa26/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-SUSU",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9ef2ef484ab84bdcc30e175c8a3a3741/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9ef2ef484ab84bdcc30e175c8a3a3741/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-THEGAME",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9d0e902f560e3d7daf7106fd8677a463/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/9d0e902f560e3d7daf7106fd8677a463/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-Eva-elfe",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/0caf678975d91813764dbeec20db29c8/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/0caf678975d91813764dbeec20db29c8/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PObox-UNBOKING",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5f6bf18963b29c320e827931369d912a/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5f6bf18963b29c320e827931369d912a/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-GAME the awkaking",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/3d0b013a775f3d97fbad6bd88f8f907c/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/3d0b013a775f3d97fbad6bd88f8f907c/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE-",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5ce7d9d2b845cfc0684cc1acdb5b8967/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/5ce7d9d2b845cfc0684cc1acdb5b8967/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "PRE_SUSU",
+        url: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/74cbe9871902643d84da55886a5ad964/watch",
+        thumbnail: "https://customer-u1hok16au7q8ozt4.cloudflarestream.com/74cbe9871902643d84da55886a5ad964/thumbnails/thumbnail.jpg?height=720"
+      },
+      {
+        title: "",
+        url: "",
+        thumbnail: "thumbnails/thumbnail.jpg?height=720"
+      },
+      
+    ];
+
+
+    const feed = document.getElementById('videoFeed');
+    const player = document.getElementById('mainPlayer');
+
+    videos.forEach(video => {
+      const item = document.createElement('div');
+      item.className = 'video-item';
+      item.innerHTML = `
+        <div class="video-thumb"><img src="${video.thumbnail}" alt="Video thumbnail"></div>
+        <div class="video-title">${video.title}</div>
+      `;
+      item.onclick = () => {
+        player.src = video.url;
+      };
+      feed.appendChild(item);
+    });
+  </script>
+</body>
+</html>
+
+
+
